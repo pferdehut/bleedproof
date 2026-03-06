@@ -1,21 +1,20 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Outfit } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Navigation } from "@/components/navigation"
+import { Footer } from "@/components/footer"
+import { CookieConsent } from "@/components/cookie-consent"
 import "./globals.css"
 
-// Using @font-face in globals.css instead for more reliable local font loading
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-})
+const outfit400 = Outfit({ weight: "400", variable: "--font-body" })
+const outfit800 = Outfit({ weight: "800", variable: "--font-display" })
 
 export const metadata: Metadata = {
-  title: "bleedprof",
-  description: "Buche unsere Druckworkshops und beherrsche die Technik",
-  generator: "v0.app",
+  title: "bleedproof – Druckworkshops",
+  description: "Siebdruck, Risodruck, Linoldruck und 3D-Druck. Buche einen Workshop und lerne drucken in Zürich.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://bleedproof.ch"),
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -24,10 +23,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} font-body antialiased break-words`}>
+    <html lang="de">
+      <body className={`${outfit400.variable} ${outfit800.variable} antialiased break-words min-h-dvh m-0`}>
         <Navigation />
         {children}
+        <Footer />
+        <CookieConsent />
         <Analytics />
       </body>
     </html>
