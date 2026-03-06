@@ -10,45 +10,48 @@ import { Textarea } from "@/components/ui/textarea"
 export function ContactForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const formData = new FormData(e.currentTarget)
 
-    setSuccess(true)
-    setIsLoading(false)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: formData.get('firstName'),
+          lastName: formData.get('lastName'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          subject: formData.get('subject'),
+          message: formData.get('message'),
+        }),
+      })
 
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setSuccess(false)
-      ;(e.target as HTMLFormElement).reset()
-    }, 3000)
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Senden fehlgeschlagen')
+      }
+
+      setSuccess(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Senden fehlgeschlagen')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (success) {
     return (
-      <div className="rounded-lg bg-green-50 p-6 text-center dark:bg-green-900/20">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="mx-auto h-12 w-12 text-green-600 dark:text-green-400"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-          />
-        </svg>
-        <h3 className="mt-4 text-lg font-semibold text-green-900 dark:text-green-100">Nachricht geschickt</h3>
-        <p className="mt-2 text-sm text-green-700 dark:text-green-300">
-          Danke für deine Nachricht. Wir werden uns baldmöglichst melden.
-        </p>
+      <div className="border-4 border-black bg-lime p-8 text-center">
+        <div className="text-6xl mb-4">✓</div>
+        <h3 className="text-2xl font-display font-black uppercase mb-2">Nachricht verschickt!</h3>
+        <p className="text-sm font-bold">Danke für deine Nachricht. Wir melden uns baldmöglichst.</p>
       </div>
     )
   }
@@ -73,7 +76,7 @@ export function ContactForm() {
 
       <div className="space-y-2">
         <Label htmlFor="phone">Telefonnummer (Optional)</Label>
-        <Input id="phone" name="phone" type="tel" placeholder="+71 00 000 00 00" />
+        <Input id="phone" name="phone" type="tel" placeholder="+41 00 000 00 00" />
       </div>
 
       <div className="space-y-2">
@@ -92,8 +95,14 @@ export function ContactForm() {
         />
       </div>
 
-      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-        {isLoading ? "Senden..." : "Send Message"}
+      {error && (
+        <div className="border-4 border-black bg-coral p-4 text-sm font-black">
+          <p>{error}</p>
+        </div>
+      )}
+
+      <Button type="submit" className="w-full font-black uppercase" size="lg" disabled={isLoading}>
+        {isLoading ? "Senden..." : "Nachricht senden"}
       </Button>
     </form>
   )
